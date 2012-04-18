@@ -76,6 +76,12 @@ public abstract class StackMobRequest {
     protected Boolean isSecure = false;
     protected Map<String, String> params = new HashMap<String, String>();
     protected List<Map.Entry<String, String>> headers = new ArrayList<Map.Entry<String, String>>();
+    protected boolean sign = true;
+
+    public StackMobRequest setSign(boolean sign) {
+        this.sign = sign;
+        return this;
+    }
 
     protected Gson gson;
 
@@ -294,7 +300,7 @@ public abstract class StackMobRequest {
             oReq.addHeader(header.getKey(), header.getValue());
         }
 
-        oAuthService.signRequest(new Token("", ""), oReq);
+        if(sign) oAuthService.signRequest(new Token("", ""), oReq);
         return oReq;
     }
 

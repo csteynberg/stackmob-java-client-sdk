@@ -16,12 +16,15 @@
 
 package com.stackmob.sdk.api;
 
+import java.util.Date;
+
 public class StackMobSession {
     private String key;
     private String secret;
     private String userObjectName;
     private int apiVersionNumber;
     private String appName = null;
+    private long serverTimeDiff = 0;
 
     public StackMobSession(String key, String secret, String userObjectName, String appName, int apiVersionNumber) {
         this(key, secret, userObjectName, apiVersionNumber);
@@ -56,5 +59,17 @@ public class StackMobSession {
 
     public String getAppName() {
         return appName;
+    }
+
+    private static class StartSessionResponse {
+
+    }
+    
+    public void calculateServerTimeDiff(long serverTime) {
+        this.serverTimeDiff = serverTime - (new Date().getTime() / 1000);
+    }
+    
+    public long getServerTimeDiff() {
+        return serverTimeDiff;
     }
 }

@@ -16,10 +16,23 @@
 
 package com.stackmob.sdk.net;
 
+import com.stackmob.sdk.api.StackMob;
 import org.scribe.builder.api.DefaultApi10a;
 import org.scribe.model.Token;
+import org.scribe.services.TimestampService;
+import org.scribe.services.TimestampServiceImpl;
 
 public class StackMobApi extends DefaultApi10a {
+
+    public static class StackMobTimeService extends TimestampServiceImpl {
+        
+        @Override
+        public String getTimestampInSeconds() {
+            long localTime = Long.parseLong(super.getTimestampInSeconds());
+            //Ensure the timestamp we sends matches up with the server time
+            return String.valueOf(StackMob.getStackMob().getSession().getServerTimeDiff() + localTime);
+        }
+    }
 
     @Override
     public String getRequestTokenEndpoint() {
@@ -34,5 +47,11 @@ public class StackMobApi extends DefaultApi10a {
     @Override
     public String getAuthorizationUrl(Token token) {
         return null;
+    }
+
+    @Override
+    public TimestampService getTimestampService()
+    {
+        return new StackMobTimeService();
     }
 }

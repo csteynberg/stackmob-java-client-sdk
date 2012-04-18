@@ -260,7 +260,7 @@ public class StackMob {
                                           StackMobRequest.EmptyParams,
                                           "startsession",
                                           callback,
-                                          this.redirectedCallback).setUrlFormat(this.apiUrlFormat).sendRequest();
+                                          this.redirectedCallback).setUrlFormat(this.apiUrlFormat).setSign(false).sendRequest();
     }
 
     ////////////////////
