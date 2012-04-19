@@ -163,13 +163,8 @@ public class StackMobTests extends StackMobTestCommon {
     }
 
     @Test public void testTimeSync() throws Exception {
-        StackMobSession oldSession = StackMob.getStackMob().getSession();
         //Hack a bad local time into the session
-        StackMob.getStackMob().setSession(new StackMobSession(oldSession.getKey(),
-                                                              oldSession.getSecret(),
-                                                              oldSession.getUserObjectName(),
-                                                              oldSession.getAppName(),
-                                                              oldSession.getApiVersionNumber()) {
+        StackMob.getStackMob().setSession(new StackMobSession(StackMob.getStackMob().getSession()) {
             @Override
             public long getLocalTime() {
                 return super.getLocalTime() + 5000;

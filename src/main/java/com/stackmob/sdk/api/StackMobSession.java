@@ -43,6 +43,14 @@ public class StackMobSession {
         this.apiVersionNumber = apiVersionNumber;
     }
 
+    public StackMobSession(StackMobSession that) {
+        this.key = that.key;
+        this.secret = that.secret;
+        this.appName = that.appName;
+        this.userObjectName = that.userObjectName;
+        this.apiVersionNumber = that.apiVersionNumber;
+    }
+
     public String getKey() {
         return key;
     }
@@ -72,13 +80,22 @@ public class StackMobSession {
     }
 
     public long getServerTime() {
-        return serverTimeDiff + getLocalTime();
+        return getServerTime() + getLocalTime();
     }
     
     public void calculateServerTimeDiff(String response) {
         try {
             StartSessionResponse responseData = new Gson().fromJson(response, StartSessionResponse.class);
-            this.serverTimeDiff = responseData.server_time_seconds - getLocalTime();
+            saveServerTimeDiff(responseData.server_time_seconds - getLocalTime());
         } catch(Exception ignore) {}
     }
+
+    protected void saveServerTimeDiff(long serverTimeDiff) {
+        this.serverTimeDiff = serverTimeDiff;
+    }
+
+    protected long getServerTimeDiff() {
+        return serverTimeDiff;
+    }
+
 }
