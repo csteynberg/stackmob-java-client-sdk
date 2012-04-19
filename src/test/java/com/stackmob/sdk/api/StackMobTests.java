@@ -162,6 +162,26 @@ public class StackMobTests extends StackMobTestCommon {
         asserter.assertLatchFinished(latch);
     }
 
+    @Test public void serverTime() throws InterruptedException, StackMobException {
+        final CountDownLatch latch = latchOne();
+        final MultiThreadAsserter asserter = new MultiThreadAsserter();
+
+        stackmob.serverTime(new StackMobCallback() {
+            @Override
+            public void success(String responseBody) {
+                asserter.markNotNull(responseBody);
+                asserter.markNotJsonError(responseBody);
+                latch.countDown();
+            }
+
+            @Override
+            public void failure(StackMobException e) {
+                asserter.markException(e);
+            }
+        });
+        asserter.assertLatchFinished(latch);
+    }
+
     @Test public void testTimeSync() throws Exception {
         //Hack a bad local time into the session
         StackMob.getStackMob().setSession(new StackMobSession(StackMob.getStackMob().getSession()) {
@@ -170,7 +190,7 @@ public class StackMobTests extends StackMobTestCommon {
                 return super.getLocalTime() + 5000;
             }
         });
-        startSession();
+        serverTime();
         //After startSession we should be accounting for the bad local time
         getWithoutArguments();
     }

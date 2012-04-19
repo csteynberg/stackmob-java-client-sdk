@@ -256,6 +256,22 @@ public class StackMob {
      * @return a StackMobRequestSendResult representing what happened when the SDK tried to do the request. contains no information about the response - that will be passed to the callback when the response comes back
      */
     public StackMobRequestSendResult startSession(StackMobRawCallback callback) {
+        return new StackMobRequestWithoutPayload(this.executor,
+                                          this.session,
+                                          HttpVerbWithoutPayload.GET,
+                                          StackMobRequest.EmptyHeaders,
+                                          StackMobRequest.EmptyParams,
+                                          "startsession",
+                                          callback,
+                                          this.redirectedCallback).setUrlFormat(this.apiUrlFormat).sendRequest();
+    }
+
+    /**
+     * call the servertime method on StackMob
+     * @param callback callback to call when the method completes
+     * @return a StackMobRequestSendResult representing what happened when the SDK tried to do the request. contains no information about the response - that will be passed to the callback when the response comes back
+     */
+    public StackMobRequestSendResult serverTime(StackMobRawCallback callback) {
         final StackMobRawCallback finalCallback = callback;
         StackMobRawCallback intermediary = new StackMobRawCallback() {
             @Override
@@ -266,13 +282,13 @@ public class StackMob {
         };
 
         return new StackMobRequestWithoutPayload(this.executor,
-                                          this.session,
-                                          HttpVerbWithoutPayload.GET,
-                                          StackMobRequest.EmptyHeaders,
-                                          StackMobRequest.EmptyParams,
-                                          "startsession",
-                                          intermediary,
-                                          this.redirectedCallback).setUrlFormat(this.apiUrlFormat).setSign(false).sendRequest();
+                this.session,
+                HttpVerbWithoutPayload.GET,
+                StackMobRequest.EmptyHeaders,
+                StackMobRequest.EmptyParams,
+                "servertime",
+                intermediary,
+                this.redirectedCallback).setUrlFormat(this.apiUrlFormat).setSign(false).sendRequest();
     }
 
     ////////////////////

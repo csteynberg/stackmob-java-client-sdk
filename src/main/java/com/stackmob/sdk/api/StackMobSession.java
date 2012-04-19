@@ -71,7 +71,7 @@ public class StackMobSession {
         return appName;
     }
 
-    private static class StartSessionResponse {
+    private static class ServerTimeResponse {
         public long server_time_seconds;
     }
 
@@ -80,12 +80,12 @@ public class StackMobSession {
     }
 
     public long getServerTime() {
-        return getServerTime() + getLocalTime();
+        return getServerTimeDiff() + getLocalTime();
     }
     
     public void calculateServerTimeDiff(String response) {
         try {
-            StartSessionResponse responseData = new Gson().fromJson(response, StartSessionResponse.class);
+            ServerTimeResponse responseData = new Gson().fromJson(response, ServerTimeResponse.class);
             saveServerTimeDiff(responseData.server_time_seconds - getLocalTime());
         } catch(Exception ignore) {}
     }
