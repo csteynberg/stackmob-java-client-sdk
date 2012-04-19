@@ -16,6 +16,8 @@
 
 package com.stackmob.sdk.api;
 
+import com.google.gson.Gson;
+
 import java.util.Date;
 
 public class StackMobSession {
@@ -62,11 +64,14 @@ public class StackMobSession {
     }
 
     private static class StartSessionResponse {
-
+        public long server_time_seconds;
     }
     
-    public void calculateServerTimeDiff(long serverTime) {
-        this.serverTimeDiff = serverTime - (new Date().getTime() / 1000);
+    public void calculateServerTimeDiff(String response) {
+        try {
+            StartSessionResponse responseData = new Gson().fromJson(response, StartSessionResponse.class);
+            this.serverTimeDiff = responseData.server_time_seconds - (new Date().getTime() / 1000);
+        } catch(Exception ignore) {}
     }
     
     public long getServerTimeDiff() {

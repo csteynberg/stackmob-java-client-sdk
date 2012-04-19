@@ -16,8 +16,11 @@
 
 package com.stackmob.sdk.api;
 
+import com.stackmob.sdk.callback.StackMobCallback;
+import com.stackmob.sdk.callback.StackMobIntermediaryCallback;
 import com.stackmob.sdk.callback.StackMobRawCallback;
 import com.stackmob.sdk.callback.StackMobRedirectedCallback;
+import com.stackmob.sdk.net.HttpVerb;
 import com.stackmob.sdk.net.HttpVerbWithPayload;
 import com.stackmob.sdk.net.HttpVerbWithoutPayload;
 import com.stackmob.sdk.push.StackMobPushToken;
@@ -253,13 +256,22 @@ public class StackMob {
      * @return a StackMobRequestSendResult representing what happened when the SDK tried to do the request. contains no information about the response - that will be passed to the callback when the response comes back
      */
     public StackMobRequestSendResult startSession(StackMobRawCallback callback) {
+        final StackMobRawCallback finalCallback = callback;
+        StackMobRawCallback intermediary = new StackMobRawCallback() {
+            @Override
+            public void done(HttpVerb requestVerb, String requestURL, List<Map.Entry<String, String>> requestHeaders, String requestBody, Integer responseStatusCode, List<Map.Entry<String, String>> responseHeaders, byte[] responseBody) {
+                StackMob.this.getSession().calculateServerTimeDiff(new String(responseBody));
+                finalCallback.done(requestVerb, requestURL, requestHeaders, requestBody, responseStatusCode, responseHeaders, responseBody);
+            }
+        };
+
         return new StackMobRequestWithoutPayload(this.executor,
                                           this.session,
                                           HttpVerbWithoutPayload.GET,
                                           StackMobRequest.EmptyHeaders,
                                           StackMobRequest.EmptyParams,
                                           "startsession",
-                                          callback,
+                                          intermediary,
                                           this.redirectedCallback).setUrlFormat(this.apiUrlFormat).setSign(false).sendRequest();
     }
 
