@@ -28,9 +28,8 @@ public class StackMobApi extends DefaultApi10a {
         
         @Override
         public String getTimestampInSeconds() {
-            long localTime = Long.parseLong(super.getTimestampInSeconds());
             //Ensure the timestamp we sends matches up with the server time
-            return String.valueOf(StackMob.getStackMob().getSession().getServerTimeDiff() + localTime);
+            return String.valueOf(StackMob.getStackMob().getSession().getServerTime());
         }
     }
 

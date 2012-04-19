@@ -66,15 +66,19 @@ public class StackMobSession {
     private static class StartSessionResponse {
         public long server_time_seconds;
     }
+
+    protected long getLocalTime() {
+        return new Date().getTime() / 1000;
+    }
+
+    public long getServerTime() {
+        return serverTimeDiff + getLocalTime();
+    }
     
     public void calculateServerTimeDiff(String response) {
         try {
             StartSessionResponse responseData = new Gson().fromJson(response, StartSessionResponse.class);
-            this.serverTimeDiff = responseData.server_time_seconds - (new Date().getTime() / 1000);
+            this.serverTimeDiff = responseData.server_time_seconds - getLocalTime();
         } catch(Exception ignore) {}
-    }
-    
-    public long getServerTimeDiff() {
-        return serverTimeDiff;
     }
 }

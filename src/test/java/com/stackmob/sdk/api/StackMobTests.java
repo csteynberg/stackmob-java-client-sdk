@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.stackmob.sdk;
+package com.stackmob.sdk.api;
 
+import com.stackmob.sdk.StackMobTestCommon;
 import com.stackmob.sdk.api.StackMobFile;
 import com.stackmob.sdk.api.StackMobQuery;
 import com.stackmob.sdk.api.StackMobQueryWithField;
@@ -23,11 +24,13 @@ import com.stackmob.sdk.callback.StackMobCallback;
 import com.stackmob.sdk.concurrencyutils.CountDownLatchUtils;
 import com.stackmob.sdk.concurrencyutils.MultiThreadAsserter;
 import com.stackmob.sdk.exception.StackMobException;
+import com.stackmob.sdk.net.StackMobApi;
 import com.stackmob.sdk.testobjects.Game;
 import com.stackmob.sdk.testobjects.S3Object;
 import com.stackmob.sdk.testobjects.StackMobObjectOnServer;
 import com.stackmob.sdk.testobjects.User;
 import org.junit.Test;
+import org.scribe.services.TimestampService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -157,6 +160,24 @@ public class StackMobTests extends StackMobTestCommon {
             }
         });
         asserter.assertLatchFinished(latch);
+    }
+
+    @Test public void testTimeSync() throws Exception {
+        StackMobSession oldSession = StackMob.getStackMob().getSession();
+        //Hack a bad local time into the session
+        StackMob.getStackMob().setSession(new StackMobSession(oldSession.getKey(),
+                                                              oldSession.getSecret(),
+                                                              oldSession.getUserObjectName(),
+                                                              oldSession.getAppName(),
+                                                              oldSession.getApiVersionNumber()) {
+            @Override
+            public long getLocalTime() {
+                return super.getLocalTime() + 5000;
+            }
+        });
+        startSession();
+        //After startSession we should be accounting for the bad local time
+        getWithoutArguments();
     }
 
     @Test public void getWithoutArguments() throws Exception {

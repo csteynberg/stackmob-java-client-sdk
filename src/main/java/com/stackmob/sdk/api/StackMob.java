@@ -1075,4 +1075,8 @@ public class StackMob {
     public StackMobSession getSession() {
         return session;
     }
+
+    protected void setSession(StackMobSession session) {
+        this.session = session;
+    }
 }
