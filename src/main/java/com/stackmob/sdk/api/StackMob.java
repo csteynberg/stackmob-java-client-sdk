@@ -1067,7 +1067,7 @@ public class StackMob {
         return session;
     }
 
-    protected void setSession(StackMobSession session) {
+    public void setSession(StackMobSession session) {
         this.session = session;
     }
 }
