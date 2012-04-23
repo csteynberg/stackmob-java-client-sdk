@@ -26,6 +26,7 @@ public class StackMobSession {
     private String userObjectName;
     private int apiVersionNumber;
     private String appName = null;
+    private long nextTimeCheck = 0;
     private long serverTimeDiff = 0;
 
     public StackMobSession(String key, String secret, String userObjectName, String appName, int apiVersionNumber) {
@@ -71,22 +72,23 @@ public class StackMobSession {
         return appName;
     }
 
-    private static class ServerTimeResponse {
-        public long server_time_seconds;
-    }
-
     protected long getLocalTime() {
         return new Date().getTime() / 1000;
+    }
+
+    public boolean timeCheckRequired() {
+        return nextTimeCheck < getLocalTime();
     }
 
     public long getServerTime() {
         return getServerTimeDiff() + getLocalTime();
     }
     
-    public void calculateServerTimeDiff(String response) {
+    public void recordServerTimeDiff(String timeHeader) {
         try {
-            ServerTimeResponse responseData = new Gson().fromJson(response, ServerTimeResponse.class);
-            saveServerTimeDiff(responseData.server_time_seconds - getLocalTime());
+            saveServerTimeDiff(Long.parseLong(timeHeader) - getLocalTime());
+            //Set the next sync for 10 minutes
+            nextTimeCheck = getLocalTime() + 10 * 60;
         } catch(Exception ignore) {}
     }
 
