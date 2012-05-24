@@ -17,7 +17,8 @@ package com.stackmob.sdk.model;
 
 /**
  * Represents a integer that can be incremented atomically. Its purpose is to allow you to have a value that can be
- * incremented from multiple clients without worrying about synchronization.
+ * incremented from multiple clients without worrying about synchronization. Use cases include a score tracker or
+ * thumbs-up button.
  */
 public class StackMobCounter {
     private int localBaseVal;
@@ -77,5 +78,9 @@ public class StackMobCounter {
         localBaseVal = get();
         increment = 0;
         mode = Mode.INCREMENT;
+    }
+
+    synchronized void set(int val) {
+        localBaseVal = val;
     }
 }
