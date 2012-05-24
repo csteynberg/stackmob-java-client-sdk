@@ -163,6 +163,15 @@ public abstract class StackMobModel {
                         Collection<StackMobModel> existingModels = getFieldAsCollection(field);
                         List<StackMobModel> newModels = updateModelListFromJson(json.getAsJsonArray(), existingModels, actualModelClass);
                         setFieldFromList(field, newModels, actualModelClass);
+                    } else if(getMetadata(fieldName) == COUNTER) {
+                        StackMobCounter counter = (StackMobCounter) field.get(this);
+                        int newValue = json.getAsJsonPrimitive().getAsInt();
+                        if(counter == null) {
+                            counter = new StackMobCounter(newValue);
+                            field.set(this, counter);
+                        } else {
+                            counter.set(newValue);
+                        }
                     } else {
                         // Let gson do its thing
                         field.set(this, gson.fromJson(json, field.getType()));
@@ -378,6 +387,17 @@ public abstract class StackMobModel {
                 if(value.isJsonObject()) {
                     throw new IllegalStateException("Field " + fieldName + " is a subobject which is not supported at this time");
                 }
+            } else if(getMetadata(fieldName) == COUNTER) {
+                json.remove(fieldName);
+                try {
+                    StackMobCounter counter = (StackMobCounter) getField(fieldName).get(this);
+                    switch(counter.getMode()) {
+                        case INCREMENT: json.add(fieldName +"[inc]", new JsonPrimitive(counter.getIncrement())); break;
+                        case SET: json.add(fieldName, new JsonPrimitive(counter.get())); break;
+                    }
+                    counter.reset();
+
+                } catch (Exception ignore) { } //Should never happen
             }
             outgoing.add(fieldName.toLowerCase(), json.get(fieldName));
         }

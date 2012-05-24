@@ -634,4 +634,12 @@ public class StackMobModelTests extends StackMobTestCommon {
         });
         asserter.assertLatchFinished(latch);
     }
+
+    public static class CounterTest extends StackMobModel {
+        public CounterTest(){
+            super(CounterTest.class);
+        }
+
+
+    }
 }
