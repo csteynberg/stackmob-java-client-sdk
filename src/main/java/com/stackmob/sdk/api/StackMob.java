@@ -16,9 +16,9 @@
 
 package com.stackmob.sdk.api;
 
+import com.google.gson.*;
 import com.stackmob.sdk.callback.StackMobRawCallback;
 import com.stackmob.sdk.callback.StackMobRedirectedCallback;
-import com.google.gson.JsonParser;
 import com.stackmob.sdk.net.HttpVerb;
 import com.stackmob.sdk.net.HttpVerbWithPayload;
 import com.stackmob.sdk.net.HttpVerbWithoutPayload;
@@ -45,11 +45,16 @@ public class StackMob {
     protected static class RegistrationIDAndUser {
         public String userId;
         public Map<String, String> token = new HashMap<String, String>();
+        public Boolean overwrite = null;
 
         public RegistrationIDAndUser(String registrationID, String user) {
             userId = user;
             token.put("token", registrationID);
             token.put("type", "android");
+        }
+        public RegistrationIDAndUser(String registrationID, String user, boolean overwrite) {
+            this(registrationID, user);
+            this.overwrite = overwrite;
         }
     }
     
@@ -516,6 +521,23 @@ public class StackMob {
     }
 
     /**
+     * register a user for C2DM push notifications
+     * @param username the StackMob username to register
+     * @param registrationID the C2DM registration ID. see http://code.google.com/android/c2dm/#registering for detail on how to get this ID
+     * @param overwrite whether to overwrite existing entries
+     * @param callback callback to be called when the server returns. may execute in a separate thread
+     * @return a StackMobRequestSendResult representing what happened when the SDK tried to do the request. contains no information about the response - that will be passed to the callback when the response comes back
+     */
+    public StackMobRequestSendResult registerForPushWithUser(String username,
+                                                             String registrationID,
+                                                             boolean overwrite,
+                                                             StackMobRawCallback callback) {
+        RegistrationIDAndUser tokenAndUser = new RegistrationIDAndUser(registrationID, username, overwrite);
+        return postPush("register_device_token_universal", tokenAndUser, callback);
+    }
+
+
+    /**
      * get all the tokens for the each of the given users
      * @param usernames the users whose tokens to get
      * @param callback callback to be called when the server returns. may execute in a separate thread
@@ -895,6 +917,47 @@ public class StackMob {
                 path + "/" + id,
                 callback,
                 this.redirectedCallback).setUrlFormat(this.apiUrlFormat).sendRequest();
+    }
+
+    /**
+     * do a put request on the StackMob platform, treating some of the fields as counters to be incremented rather
+     * than as values to set
+     * @param path the path to put
+     * @param id the id of the object to put
+     * @param requestObject the object to serialize and send in the PUT body. this object will be serialized with Gson
+     * @param counterFields a list of the fields in the object to be treated as counters being incremented
+     * @param callback callback to be called when the server returns. may execute in a separate thread
+     * @return a StackMobRequestSendResult representing what happened when the SDK tried to do the request. contains no information about the response - that will be passed to the callback when the response comes back
+     */
+    public StackMobRequestSendResult putAndUpdateAtomicCounters(String path,
+                                                             String id,
+                                                             Object requestObject,
+                                                             List<String> counterFields,
+                                                             StackMobRawCallback callback) {
+        JsonObject obj = new Gson().toJsonTree(requestObject).getAsJsonObject();
+        for(Map.Entry<String, JsonElement> field : obj.entrySet()) {
+            if(counterFields.contains(field.getKey())) {
+                obj.remove(field.getKey());
+                obj.add(field.getKey() + "[inc]", field.getValue());
+            }
+        }
+        return put(path, id, obj.toString(), callback);
+    }
+
+    /**
+     * Do an atomic update on a an integer field in a particular object and schema
+     *
+     * @param path the path to put
+     * @param id the id of the object to put
+     * @param field the field to increment
+     * @param value the value to increment by
+     * @param callback callback to be called when the server returns. may execute in a separate thread
+     * @return a StackMobRequestSendResult representing what happened when the SDK tried to do the request. contains no information about the response - that will be passed to the callback when the response comes back
+     */
+    public StackMobRequestSendResult updateAtomicCounter(String path, String id, String field, int value, StackMobRawCallback callback) {
+        JsonObject body = new JsonObject();
+        body.add(field + "[inc]", new JsonPrimitive(value));
+        return put(path, id, body.toString(), callback);
     }
 
     /**
