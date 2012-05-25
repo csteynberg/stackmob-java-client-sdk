@@ -639,7 +639,24 @@ public class StackMobModelTests extends StackMobTestCommon {
         public CounterTest(){
             super(CounterTest.class);
         }
+        StackMobCounter counter = new StackMobCounter();
+    }
 
+    @Test public void testCounter() throws Exception {
+        final CounterTest counter = new CounterTest();
+        counter.save(new StackMobCallback() {
+            @Override
+            public void success(String responseBody) {
+                JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
+                asserter.markEquals(0, result.get("counter").getAsInt());
+                latch.countDown();
+            }
 
+            @Override
+            public void failure(StackMobException e) {
+                asserter.markException(e);
+            }
+        });
+        asserter.assertLatchFinished(latch);
     }
 }

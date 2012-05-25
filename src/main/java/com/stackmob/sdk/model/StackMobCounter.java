@@ -21,14 +21,10 @@ package com.stackmob.sdk.model;
  * thumbs-up button.
  */
 public class StackMobCounter {
-    private int localBaseVal;
+    private int localBaseVal = 0;
     private int increment = 0;
     enum Mode{INCREMENT, SET}
     private Mode mode = Mode.INCREMENT;
-
-    public StackMobCounter(int val) {
-        this.localBaseVal = val;
-    }
 
     /**
      * Increment the value by a number (positive or negative). This will change the local value immediately

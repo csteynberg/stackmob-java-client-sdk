@@ -167,7 +167,8 @@ public abstract class StackMobModel {
                         StackMobCounter counter = (StackMobCounter) field.get(this);
                         int newValue = json.getAsJsonPrimitive().getAsInt();
                         if(counter == null) {
-                            counter = new StackMobCounter(newValue);
+                            counter = new StackMobCounter();
+                            counter.set(newValue);
                             field.set(this, counter);
                         } else {
                             counter.set(newValue);
@@ -392,7 +393,11 @@ public abstract class StackMobModel {
                 try {
                     StackMobCounter counter = (StackMobCounter) getField(fieldName).get(this);
                     switch(counter.getMode()) {
-                        case INCREMENT: json.add(fieldName +"[inc]", new JsonPrimitive(counter.getIncrement())); break;
+                        case INCREMENT: {
+                            fieldName += "[inc]";
+                            json.add(fieldName, new JsonPrimitive(counter.getIncrement()));
+                            break;
+                        }
                         case SET: json.add(fieldName, new JsonPrimitive(counter.get())); break;
                     }
                     counter.reset();
