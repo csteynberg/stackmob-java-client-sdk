@@ -644,18 +644,58 @@ public class StackMobModelTests extends StackMobTestCommon {
 
     @Test public void testCounter() throws Exception {
         final CounterTest counter = new CounterTest();
-        counter.save(new StackMobCallback() {
+        counter.save(new AssertErrorCallback() {
             @Override
             public void success(String responseBody) {
                 JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
                 asserter.markEquals(0, result.get("counter").getAsInt());
-                latch.countDown();
+                counter.counter.updateAtomicallyBy(5);
+                counter.save(new AssertErrorCallback() {
+                    @Override
+                    public void success(String responseBody) {
+                        JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
+                        asserter.markEquals(5, result.get("counter").getAsInt());
+                        counter.counter.forceTo(-1);
+                        counter.save(new AssertErrorCallback() {
+                            @Override
+                            public void success(String responseBody) {
+                                JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
+                                asserter.markEquals(-1, result.get("counter").getAsInt());
+                                counter.counter.updateAtomicallyBy(4);
+                                counter.save(new AssertErrorCallback() {
+                                    @Override
+                                    public void success(String responseBody) {
+                                        JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
+                                        asserter.markEquals(3, result.get("counter").getAsInt());
+                                        counter.counter = new StackMobCounter();
+                                        counter.counter.forceTo(5);
+                                        counter.counter.updateAtomicallyBy(1);
+                                        counter.fetch(new AssertErrorCallback() {
+                                            @Override
+                                            public void success(String responseBody) {
+                                                JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
+                                                asserter.markEquals(3, result.get("counter").getAsInt());
+                                                counter.counter.forceTo(5);
+                                                counter.counter.updateAtomicallyBy(1);
+                                                counter.save(new AssertErrorCallback() {
+                                                    @Override
+                                                    public void success(String responseBody) {
+                                                        JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
+                                                        asserter.markEquals(6, result.get("counter").getAsInt());
+
+                                                        latch.countDown();
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
             }
 
-            @Override
-            public void failure(StackMobException e) {
-                asserter.markException(e);
-            }
         });
         asserter.assertLatchFinished(latch);
     }
